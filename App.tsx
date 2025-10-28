@@ -1,6 +1,6 @@
 // App.tsx
 // Force re-deploy
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { VoiceRecorder } from '@lgicc/capacitor-voice-recorder';
 
