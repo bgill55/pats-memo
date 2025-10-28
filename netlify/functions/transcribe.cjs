@@ -26,18 +26,20 @@ exports.handler = async function (event) {
 
     const audioBuffer = Buffer.from(recordDataBase64, 'base64');
     
+    const { convert } = await import('convert-audio');
+    const wavBuffer = await convert(audioBuffer, { input: 'm4a', output: 'wav' });
+
     const mm = await import('music-metadata');
-    // --- Your brilliant dynamic detection ---
-    const metadata = await mm.parseBuffer(audioBuffer, mimeType);
+    const metadata = await mm.parseBuffer(wavBuffer, 'audio/wav');
     const sampleRateHertz = metadata.format.sampleRate;
 
     const client = new speech.SpeechClient({ credentials });
     const audio = {
-      content: audioBuffer, // The audio buffer
+      content: wavBuffer.toString('base64'),
     };
     
     const config = {
-      encoding: 'AAC',
+      encoding: 'LINEAR16',
       sampleRateHertz: sampleRateHertz,
       languageCode: 'en-US',
       model: 'latest_short',
@@ -48,7 +50,6 @@ exports.handler = async function (event) {
       config: config,
     };
 
-    // --- The one critical change: use the simpler 'recognize' method ---
     const [response] = await client.recognize(request);
     
     const transcription = response.results
