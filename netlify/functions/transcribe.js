@@ -1,15 +1,12 @@
 // netlify/functions/transcribe.js
-
 const speech = require('@google-cloud/speech');
-const { Storage } = require('@google-cloud/storage');
+const mm = require('music-metadata');
 
 const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
 const credentials = JSON.parse(credentialsJson);
 
-const BUCKET_NAME = process.env.GCS_BUCKET_NAME;
-
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': '*', 
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
@@ -23,30 +20,27 @@ exports.handler = async function (event) {
   }
 
   try {
-    const { recordDataBase64 } = JSON.parse(event.body);
+    const { recordDataBase64, mimeType } = JSON.parse(event.body);
     if (!recordDataBase64) {
       return { statusCode: 400, body: 'Missing audio data', headers: CORS_HEADERS };
     }
 
-    const storage = new Storage({ credentials });
     const audioBuffer = Buffer.from(recordDataBase64, 'base64');
-    const fileName = `recording-${Date.now()}.m4a`;
-    const file = storage.bucket(BUCKET_NAME).file(fileName);
-    await file.save(audioBuffer);
-    const gcsUri = `gs://${BUCKET_NAME}/${fileName}`;
+    
+    // --- Your brilliant dynamic detection ---
+    const metadata = await mm.parseBuffer(audioBuffer, mimeType);
+    const sampleRateHertz = metadata.format.sampleRate;
 
     const client = new speech.SpeechClient({ credentials });
     const audio = {
-      uri: gcsUri,
+      content: recordDataBase64, // The raw base64 data
     };
     
-    // --- THE FINAL, CORRECTED CONFIGURATION ---
     const config = {
       encoding: 'AAC',
-      // This is the critical change. Modern phones record at higher sample rates.
-      sampleRateHertz: 48000, 
+      sampleRateHertz: sampleRateHertz,
       languageCode: 'en-US',
-      model: 'latest_short', 
+      model: 'latest_short',
     };
     
     const request = {
@@ -54,14 +48,12 @@ exports.handler = async function (event) {
       config: config,
     };
 
-    const [operation] = await client.longRunningRecognize(request);
-    const [response] = await operation.promise();
+    // --- The one critical change: use the simpler 'recognize' method ---
+    const [response] = await client.recognize(request);
     
     const transcription = response.results
       .map(result => result.alternatives[0].transcript)
       .join('\n');
-
-    await file.delete();
 
     return {
       statusCode: 200,

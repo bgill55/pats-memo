@@ -14,6 +14,7 @@
     "@google-cloud/storage": "^7.17.2",
     "@google/genai": "^1.27.0",
     "capacitor-voice-recorder": "^7.0.6",
+    "music-metadata": "^11.9.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
