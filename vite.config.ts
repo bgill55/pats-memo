@@ -17,12 +17,6 @@ export default defineConfig(({ mode }) => {
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
-        }
-      },
-      build: {
-        rollupOptions: {
-          external: ['@lgicc/capacitor-voice-recorder']
-        }
-      }
-    };
-});
+              }
+            };
+        });
