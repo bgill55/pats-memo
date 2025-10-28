@@ -2,6 +2,7 @@
 // Force re-deploy
 import React, { useState } from 'react';
 import { Capacitor } from '@capacitor/core';
+import { VoiceRecorder } from '@lgicc/capacitor-voice-recorder';
 
 // --- Helper Icon Components (Keep these as they are) ---
 const MicIcon = ({ className }) => ( <svg className={className} viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1.1-9.1c0-.61.49-1.1 1.1-1.1s1.1.49 1.1 1.1V11c0 .61-.49 1.1-1.1 1.1s-1.1-.49-1.1-1.1V4.9zm6.2 6.2c0 3.31-2.69 6-6 6s-6-2.69-6-6H5c0 3.53 2.84 6.42 6.25 6.92V21h1.5v-3.08c3.41-.5 6.25-3.39 6.25-6.92h-1.9z"/></svg> );
@@ -19,20 +20,6 @@ export default function App() {
   const [error, setError] = useState('');
   const [memos, setMemos] = useState([]);
   const [commandFeedback, setCommandFeedback] = useState('');
-  const [voiceRecorder, setVoiceRecorder] = useState(null);
-
-  useEffect(() => {
-    const loadVoiceRecorder = async () => {
-      try {
-        const mod = await import('@lgicc/capacitor-voice-recorder');
-        setVoiceRecorder(mod.VoiceRecorder ?? mod.default ?? mod);
-      } catch (e) {
-        console.error("Failed to load VoiceRecorder module:", e);
-        setError("Voice recording not available.");
-      }
-    };
-    loadVoiceRecorder();
-  }, []);
 
 useEffect(() => { console.log("Forcing a new build hash."); 
   },[]
@@ -75,21 +62,16 @@ useEffect(() => { console.log("Forcing a new build hash.");
 
   const handleToggleRecording = async () => {
     try {
-      if (!voiceRecorder) {
-        setError("Voice recorder module not loaded.");
-        return;
-      }
-
       if (isRecording) {
-        const result = await voiceRecorder.stopRecording();
+        const result = await VoiceRecorder.stopRecording();
         setIsRecording(false);
         if (result.value && result.value.recordDataBase64) {
            transcribeAudio(result.value);
         }
       } else {
-        const permission = await voiceRecorder.requestAudioRecordingPermission();
+        const permission = await VoiceRecorder.requestAudioRecordingPermission();
         if (permission.value) {
-          await voiceRecorder.startRecording();
+          await VoiceRecorder.startRecording();
           setIsRecording(true);
           setCurrentTranscription("Listening...");
           setError('');
