@@ -19,29 +19,22 @@ exports.handler = async function (event) {
   }
 
   try {
-    const { recordDataBase64, mimeType } = JSON.parse(event.body);
+    const { recordDataBase64 } = JSON.parse(event.body);
     if (!recordDataBase64) {
       return { statusCode: 400, body: 'Missing audio data', headers: CORS_HEADERS };
     }
 
     const audioBuffer = Buffer.from(recordDataBase64, 'base64');
     
-    const { convert } = await import('convert-audio');
-    const wavBuffer = await convert(audioBuffer, { input: 'm4a', output: 'wav' });
-
-    const mm = await import('music-metadata');
-    const metadata = await mm.parseBuffer(wavBuffer, 'audio/wav');
-    const sampleRateHertz = metadata.format.sampleRate;
-
     const speech = await import('@google-cloud/speech');
     const client = new speech.default.SpeechClient({ credentials });
     const audio = {
-      content: wavBuffer.toString('base64'),
+      content: audioBuffer.toString('base64'),
     };
     
     const config = {
       encoding: 'LINEAR16',
-      sampleRateHertz: sampleRateHertz,
+      sampleRateHertz: 16000,
       languageCode: 'en-US',
       model: 'latest_short',
     };
