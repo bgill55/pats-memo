@@ -1,5 +1,5 @@
 // netlify/functions/transcribe.js
-const speech = require('@google-cloud/speech');
+
 
 const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
 const credentials = JSON.parse(credentialsJson);
@@ -33,7 +33,8 @@ exports.handler = async function (event) {
     const metadata = await mm.parseBuffer(wavBuffer, 'audio/wav');
     const sampleRateHertz = metadata.format.sampleRate;
 
-    const client = new speech.SpeechClient({ credentials });
+    const speech = await import('@google-cloud/speech');
+    const client = new speech.default.SpeechClient({ credentials });
     const audio = {
       content: wavBuffer.toString('base64'),
     };
