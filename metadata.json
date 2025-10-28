@@ -1,0 +1,7 @@
+{
+  "name": "Voice Memo AI",
+  "description": "A modern voice-to-text memo-taking application powered by Gemini. Record your thoughts, get instant transcriptions, and save or share them with ease.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
