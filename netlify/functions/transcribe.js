@@ -1,6 +1,5 @@
 // netlify/functions/transcribe.js
 const speech = require('@google-cloud/speech');
-const mm = require('music-metadata');
 
 const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
 const credentials = JSON.parse(credentialsJson);
@@ -27,6 +26,7 @@ exports.handler = async function (event) {
 
     const audioBuffer = Buffer.from(recordDataBase64, 'base64');
     
+    const mm = await import('music-metadata');
     // --- Your brilliant dynamic detection ---
     const metadata = await mm.parseBuffer(audioBuffer, mimeType);
     const sampleRateHertz = metadata.format.sampleRate;
