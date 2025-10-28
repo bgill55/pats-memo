@@ -33,7 +33,7 @@ exports.handler = async function (event) {
 
     const client = new speech.SpeechClient({ credentials });
     const audio = {
-      content: recordDataBase64, // The raw base64 data
+      content: audioBuffer, // The audio buffer
     };
     
     const config = {
