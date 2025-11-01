@@ -4,7 +4,12 @@ const config: CapacitorConfig = {
   appId: 'com.example.app',
   appName: 'pats-memo',
   webDir: 'dist',
-  bundledWebRuntime: false
+  bundledWebRuntime: false,
+  android: {
+    webContents: {
+      useSoftwareRendering: true
+    }
+  }
 };
 
 export default config;

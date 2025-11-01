@@ -1,3 +1,275 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+:root {
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+  /* Light Theme */
+  --bg-light: #F9F9F9;
+  --surface-light: #FFFFFF;
+  --text-primary-light: #1F2937;
+  --text-secondary-light: #6B7280;
+  --primary-light: #3B82F6;
+  --primary-hover-light: #2563EB;
+  --border-light: #E5E7EB;
+
+  /* Dark Theme */
+  --bg-dark: #111827;
+  --surface-dark: #1F2937;
+  --text-primary-dark: #F9FAFB;
+  --text-secondary-dark: #9CA3AF;
+  --primary-dark: #60A5FA;
+  --primary-hover-dark: #3B82F6;
+  --border-dark: #374151;
+}
+
+body {
+  font-family: var(--font-sans);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body[data-theme='light'] {
+  background-color: var(--bg-light);
+  color: var(--text-primary-light);
+  --bg: var(--bg-light);
+  --surface: var(--surface-light);
+  --text-primary: var(--text-primary-light);
+  --text-secondary: var(--text-secondary-light);
+  --primary: var(--primary-light);
+  --primary-hover: var(--primary-hover-light);
+  --border: var(--border-light);
+}
+
+body[data-theme='dark'] {
+  background-color: var(--bg-dark);
+  color: var(--text-primary-dark);
+  --bg: var(--bg-dark);
+  --surface: var(--surface-dark);
+  --text-primary: var(--text-primary-dark);
+  --text-secondary: var(--text-secondary-dark);
+  --primary: var(--primary-dark);
+  --primary-hover: var(--primary-hover-dark);
+  --border: var(--border-dark);
+}
+
+.app-container {
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--surface);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  position: relative; /* For centering the title */
+  display: flex;
+  justify-content: flex-end; /* Push controls to the right */
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 1.5rem; /* Increased size */
+  font-weight: 700; /* Increased weight */
+  /* --- Make it POP --- */
+  background: linear-gradient(45deg, var(--primary), var(--primary-hover));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-fill-color: transparent;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+main {
+  padding: 1.5rem;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* --- Sections --- */
+.transcription-section, .recording-section, .memos-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.recording-section {
+  align-items: center;
+  text-align: center;
+}
+
+/* --- Transcription --- */
+.transcription-text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  min-height: 6em; /* Reserve space */
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background-color: var(--bg);
+}
+
+.transcription-text .placeholder {
+  color: var(--text-secondary);
+}
+
+.error-message {
+  color: #EF4444;
+  margin: 0;
+}
+
+.transcription-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+/* --- Recording --- */
+.recording-instructions {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.mic-button {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  position: relative;
+}
+
+.mic-button svg {
+  width: 32px;
+  height: 32px;
+}
+
+.recording-indicator {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-color: #EF4444;
+  animation: pulse 1.5s infinite;
+  z-index: -1;
+}
+
+@keyframes pulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  70% { transform: scale(1); opacity: 0; }
+  100% { transform: scale(0.9); opacity: 0; }
+}
+
+/* --- Memos --- */
+.memos-section h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.75rem;
+}
+
+.memos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.memo-card {
+  background-color: var(--bg);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.memo-text {
+  margin: 0 0 1rem;
+}
+
+.memo-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.memo-timestamp {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.memo-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.memo-actions button {
+  padding: 0.25rem;
+  background: none;
+  color: var(--text-secondary);
+}
+
+.memo-actions button:hover {
+  color: var(--text-primary);
+}
+
+.no-memos {
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+/* --- General Button Styles --- */
+button {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.theme-switcher, .header-controls button {
+  background: none;
+  color: var(--text-secondary);
+  padding: 0.25rem;
+}
+
+button.theme-switcher:hover, .header-controls button:hover {
+  color: var(--text-primary);
+}
