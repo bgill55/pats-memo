@@ -33,8 +33,6 @@ exports.handler = async function (event) {
     };
     
     const config = {
-      encoding: 'LINEAR16',
-      sampleRateHertz: 16000,
       languageCode: 'en-US',
       model: 'latest_short',
     };

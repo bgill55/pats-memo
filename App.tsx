@@ -1,7 +1,25 @@
 // App.tsx
-import React, { useState, useEffect } from 'react';
-import { Capacitor } from '@capacitor/core';
-import { CapacitorVoiceRecorder as VoiceRecorder } from '@lgicc/capacitor-voice-recorder';
+import React, { useState, useEffect, useRef } from 'react';
+
+// Helper function to convert a Blob to a base64 string
+const blobToBase64 = (blob: Blob): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        // result is in the format "data:audio/webm;base64,..."
+        // We only want the part after the comma
+        const base64 = reader.result.split(',')[1];
+        resolve(base64);
+      } else {
+        reject(new Error('FileReader result is not a string'));
+      }
+    };
+    reader.readAsDataURL(blob);
+  });
+};
+
 
 const MicIcon = () => ( <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm-1.1-9.1c0-.61.49-1.1 1.1-1.1s1.1.49 1.1 1.1V11c0 .61-.49 1.1-1.1 1.1s-1.1-.49-1.1-1.1V4.9zm6.2 6.2c0 3.31-2.69 6-6 6s-6-2.69-6-6H5c0 3.53 2.84 6.42 6.25 6.92V21h1.5v-3.08c3.41-.5 6.25-3.39 6.25-6.92h-1.9z"/></svg> );
 const StopIcon = () => ( <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg> );
@@ -20,6 +38,10 @@ export default function App() {
   const [commandFeedback, setCommandFeedback] = useState('');
   const [theme, setTheme] = useState('light');
 
+  // Refs for the MediaRecorder and audio chunks
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
   }, [theme]);
@@ -28,7 +50,7 @@ export default function App() {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
-  const transcribeAudio = async (audioData) => {
+  const transcribeAudio = async (base64Data: string) => {
     setCurrentTranscription("Transcribing...");
     try {
       const url = "https://pats-memo-pad.netlify.app/.netlify/functions/transcribe";
@@ -38,7 +60,7 @@ export default function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          recordDataBase64: audioData.recordDataBase64,
+          recordDataBase64: base64Data,
         }),
       });
 
@@ -54,7 +76,7 @@ export default function App() {
 
       setCurrentTranscription(result.transcription);
 
-    } catch (e) {
+    } catch (e: any) {
       console.error("Transcription error:", e);
       setError("Failed to transcribe audio.");
       setCurrentTranscription(`Transcription failed: ${e.message}`);
@@ -64,32 +86,53 @@ export default function App() {
   const handleToggleListener = () => setIsListening(p => !p);
   const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
   const handleClear = () => setCurrentTranscription('');
-  const handleShareMemo = (text) => alert(`Sharing memo: "${text}"`);
-  const handleDeleteMemo = (id) => setMemos(prev => prev.filter(memo => memo.id !== id));
+  const handleShareMemo = (text: string) => alert(`Sharing memo: "${text}"`);
+  const handleDeleteMemo = (id: number) => setMemos(prev => prev.filter(memo => memo.id !== id));
 
   const handleToggleRecording = async () => {
-    try {
-      if (isRecording) {
-        const result = await VoiceRecorder.stopRecording();
+    if (isRecording) {
+      // Stop recording
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        mediaRecorderRef.current.stop();
         setIsRecording(false);
-        if (result.value && result.value.recordDataBase64) {
-          transcribeAudio(result.value);
-        }
-      } else {
-        const permission = await VoiceRecorder.requestAudioRecordingPermission();
-        if (permission.value) {
-          await VoiceRecorder.startRecording({ format: 'wav' });
-          setIsRecording(true);
-          setCurrentTranscription("Listening...");
-          setError('');
-        } else {
-          setError("Microphone permission is required.");
-          alert("Microphone permission was denied.");
-        }
+        // The 'stop' event handler will process the audio
       }
-    } catch (e) {
-      console.error("Voice recorder error", e);
-      setError("An error occurred with the voice recorder.");
+    } else {
+      // Start recording
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          try {
+            const base64String = await blobToBase64(audioBlob);
+            transcribeAudio(base64String);
+          } catch (e) {
+            console.error("Error converting blob to base64", e);
+            setError("Failed to process audio.");
+          }
+          // Clean up the stream
+          stream.getTracks().forEach(track => track.stop());
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+        setCurrentTranscription("Listening...");
+        setError('');
+      } catch (err) {
+        console.error("Error accessing microphone:", err);
+        setError("Microphone permission is required to record audio.");
+        alert("Microphone permission was denied or an error occurred.");
+      }
     }
   };
 
@@ -222,5 +265,3 @@ export default function App() {
     );
 
   }
-
-  
