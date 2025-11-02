@@ -136,18 +136,54 @@ export default function App() {
     }
   };
 
-    return (
-
-      <div className="app-container">
-
-        <header>
-
-          <h1>Pat's Memo Pad</h1>
-
-          <div className="header-controls">
-
-            <button onClick={toggleTheme} title="Toggle Theme" className="theme-switcher">
-
+      const [installPromptEvent, setInstallPromptEvent] = useState<Event | null>(null);
+    
+      useEffect(() => {
+        const handleBeforeInstallPrompt = (e: Event) => {
+          e.preventDefault();
+          setInstallPromptEvent(e);
+        };
+    
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+        return () => {
+          window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        };
+      }, []);
+    
+      const handleInstallClick = async () => {
+        if (!installPromptEvent) {
+          return;
+        }
+        // @ts-ignore
+        installPromptEvent.prompt();
+        // @ts-ignore
+        const { outcome } = await installPromptEvent.userChoice;
+        if (outcome === 'accepted') {
+          console.log('User accepted the install prompt.');
+        } else {
+          console.log('User dismissed the install prompt.');
+        }
+        setInstallPromptEvent(null);
+      };
+    
+        return (
+    
+          <div className="app-container">
+    
+            <header>
+    
+              <h1>Pat's Memo Pad</h1>
+    
+              <div className="header-controls">
+    
+                {installPromptEvent && (
+                  <button onClick={handleInstallClick} title="Install App" className="install-button">
+                    Install App
+                  </button>
+                )}
+    
+                <button onClick={toggleTheme} title="Toggle Theme" className="theme-switcher">
               {theme === 'light' ? '🌙' : '☀️'}
 
             </button>
