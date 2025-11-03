@@ -1,4 +1,5 @@
 // App.tsx
+import '@khmyznikov/pwa-install';
 import React, { useState, useEffect, useRef } from 'react';
 
 // Helper function to convert a Blob to a base64 string
@@ -105,9 +106,75 @@ export default function App() {
   };
 
   const handleToggleListener = () => setIsListening(p => !p);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.error('Speech recognition not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+      console.log('Recognized speech:', transcript);
+
+      if (transcript.includes('start recording')) {
+        handleToggleRecording();
+      } else if (transcript.includes('stop recording')) {
+        handleToggleRecording();
+      } else if (transcript.includes('share')) {
+        // Assuming the user wants to share the most recent memo
+        if (memos.length > 0) {
+          handleShareMemo(memos[0].text);
+        }
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+    };
+
+    if (isListening) {
+      recognition.start();
+      console.log('Voice command recognition started.');
+    } else {
+      recognition.stop();
+      console.log('Voice command recognition stopped.');
+    }
+
+    return () => {
+      recognition.stop();
+    };
+  }, [isListening]);
   const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
   const handleClear = () => setCurrentTranscription('');
-  const handleShareMemo = (text: string) => alert(`Sharing memo: "${text}"`);
+  const handleShareMemo = async (text: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Memo',
+          text: text,
+        });
+        console.log('Memo shared successfully');
+      } catch (error) {
+        console.error('Error sharing memo:', error);
+      }
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Memo copied to clipboard');
+      } catch (error) {
+        console.error('Error copying memo to clipboard:', error);
+        alert('Could not copy memo to clipboard');
+      }
+    }
+  };
   const handleDeleteMemo = (id: number) => setMemos(prev => prev.filter(memo => memo.id !== id));
 
   const handleToggleRecording = async () => {
@@ -157,36 +224,9 @@ export default function App() {
     }
   };
 
-      const [installPromptEvent, setInstallPromptEvent] = useState<Event | null>(null);
+      
     
-      useEffect(() => {
-        const handleBeforeInstallPrompt = (e: Event) => {
-          e.preventDefault();
-          setInstallPromptEvent(e);
-        };
-    
-        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    
-        return () => {
-          window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-        };
-      }, []);
-    
-      const handleInstallClick = async () => {
-        if (!installPromptEvent) {
-          return;
-        }
-        // @ts-ignore
-        installPromptEvent.prompt();
-        // @ts-ignore
-        const { outcome } = await installPromptEvent.userChoice;
-        if (outcome === 'accepted') {
-          console.log('User accepted the install prompt.');
-        } else {
-          console.log('User dismissed the install prompt.');
-        }
-        setInstallPromptEvent(null);
-      };
+      
     
         return (
     
@@ -197,12 +237,9 @@ export default function App() {
               <h1>Pat's Memo Pad</h1>
     
               <div className="header-controls">
+                <pwa-install></pwa-install>
     
-                {installPromptEvent && (
-                  <button onClick={handleInstallClick} title="Install App" className="install-button">
-                    Install App
-                  </button>
-                )}
+                
     
                 <button onClick={toggleTheme} title="Toggle Theme" className="theme-switcher">
               {theme === 'light' ? '🌙' : '☀️'}
