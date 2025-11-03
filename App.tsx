@@ -34,7 +34,28 @@ export default function App() {
   const [isRecording, setIsRecording] = useState(false);
   const [currentTranscription, setCurrentTranscription] = useState('');
   const [error, setError] = useState('');
-  const [memos, setMemos] = useState([]);
+  const [memos, setMemos] = useState<any[]>([]);
+
+  // Load memos from localStorage on initial render
+  useEffect(() => {
+    try {
+      const savedMemos = localStorage.getItem('pats-memos');
+      if (savedMemos) {
+        setMemos(JSON.parse(savedMemos));
+      }
+    } catch (e) {
+      console.error("Failed to load memos from localStorage", e);
+    }
+  }, []);
+
+  // Save memos to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('pats-memos', JSON.stringify(memos));
+    } catch (e) {
+      console.error("Failed to save memos to localStorage", e);
+    }
+  }, [memos]);
   const [commandFeedback, setCommandFeedback] = useState('');
   const [theme, setTheme] = useState('light');
 

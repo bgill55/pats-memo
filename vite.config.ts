@@ -21,6 +21,8 @@ export default defineConfig(({ mode }) => {
             short_name: 'Pats Memo',
             description: 'A simple voice memo app with transcription.',
             theme_color: '#ffffff',
+            start_url: '.',
+            display: 'standalone',
             icons: [
               {
                 src: 'pwa-192x192.png',
