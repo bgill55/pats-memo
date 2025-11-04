@@ -275,6 +275,17 @@ button.theme-switcher {
   padding: 0.25rem;
 }
 
+.voice-command-button {
+  background-color: var(--primary);
+  color: white;
+  border-radius: 50%; /* Make it round */
+  width: 40px; /* Adjust size as needed */
+  height: 40px; /* Adjust size as needed */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 button.theme-switcher:hover, .header-controls button:hover {
   color: var(--text-primary);
 }

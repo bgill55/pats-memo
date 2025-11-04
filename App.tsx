@@ -250,7 +250,7 @@ export default function App() {
 
             </button>
 
-            <button onClick={handleToggleListener} title="Toggle Voice Commands">
+            <button onClick={handleToggleListener} title="Toggle Voice Commands" className="voice-command-button">
 
               <VoiceCommandIcon />
 
