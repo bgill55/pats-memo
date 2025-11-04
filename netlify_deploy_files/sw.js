@@ -1,5 +1,13 @@
-const CACHE_NAME = '__CACHE_VERSION__';
-const urlsToCache = __ASSETS__;
+const CACHE_NAME = 'pats-memo-cache-v1';
+const urlsToCache = [
+  '/',
+  '/index.html',
+  '/index.css',
+  '/apple-touch-icon.png',
+  '/manifest.json',
+  '/pwa-192x192.png',
+  '/pwa-512x512.png'
+];
 
 self.addEventListener('install', event => {
   event.waitUntil(
