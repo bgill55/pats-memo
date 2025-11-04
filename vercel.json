@@ -1,7 +1,7 @@
 {
   "builds": [
     {
-      "src": "api/transcribe.cjs",
+      "src": "api/transcribe.js",
       "use": "@vercel/node"
     },
     {
@@ -10,7 +10,4 @@
       "config": { "distDir": "dist" }
     }
   ],
-  "rewrites": [
-    { "source": "/api/transcribe", "destination": "/api/transcribe" }
-  ]
 }
