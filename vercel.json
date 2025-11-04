@@ -1,7 +1,5 @@
 {
   "functions": {
-    "api/transcribe.cjs": {
-      "runtime": "@vercel/node@latest"
-    }
+    "api/transcribe.cjs": {}
   }
 }
