@@ -55,7 +55,7 @@ exports.handler = async function (event) {
     };
 
   } catch (error) {
-    console.error("Error during transcription:", error);
+    console.error("Detailed transcription error:", error);
     return {
       statusCode: 500,
       headers: CORS_HEADERS,
