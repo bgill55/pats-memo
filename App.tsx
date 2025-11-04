@@ -109,10 +109,7 @@ export default function App() {
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.error('Speech recognition not supported in this browser.');
-      return;
-    }
+
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
