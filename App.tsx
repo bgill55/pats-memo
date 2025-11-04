@@ -108,45 +108,51 @@ export default function App() {
   const handleToggleListener = () => setIsListening(p => !p);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-      console.log('Recognized speech:', transcript);
-
-      if (transcript.includes('start recording')) {
-        handleToggleRecording();
-      } else if (transcript.includes('stop recording')) {
-        handleToggleRecording();
-      } else if (transcript.includes('share')) {
-        // Assuming the user wants to share the most recent memo
-        if (memos.length > 0) {
-          handleShareMemo(memos[0].text);
-        }
+      if (!SpeechRecognition) {
+        console.error('Speech recognition not supported in this browser.');
+        return;
       }
-    };
 
-    recognition.onerror = (event) => {
-      console.error('Speech recognition error:', event.error);
-    };
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
 
-    if (isListening) {
-      recognition.start();
-      console.log('Voice command recognition started.');
-    } else {
-      recognition.stop();
-      console.log('Voice command recognition stopped.');
+      recognition.onresult = (event) => {
+        const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+        console.log('Recognized speech:', transcript);
+
+        if (transcript.includes('start recording')) {
+          handleToggleRecording();
+        } else if (transcript.includes('stop recording')) {
+          handleToggleRecording();
+        } else if (transcript.includes('share')) {
+          // Assuming the user wants to share the most recent memo
+          if (memos.length > 0) {
+            handleShareMemo(memos[0].text);
+          }
+        }
+      };
+
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+      };
+
+      if (isListening) {
+        recognition.start();
+        console.log('Voice command recognition started.');
+      } else {
+        recognition.stop();
+        console.log('Voice command recognition stopped.');
+      }
+
+      return () => {
+        recognition.stop();
+      };
     }
-
-    return () => {
-      recognition.stop();
-    };
   }, [isListening]);
   const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
   const handleClear = () => setCurrentTranscription('');
