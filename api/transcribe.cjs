@@ -10,18 +10,21 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-exports.handler = async function (event) {
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 204, headers: CORS_HEADERS, body: '' };
+module.exports = async (req, res) => {
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
   }
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed', headers: CORS_HEADERS };
+  if (req.method !== 'POST') {
+    res.status(405).send('Method Not Allowed');
+    return;
   }
 
   try {
-    const { recordDataBase64 } = JSON.parse(event.body);
+    const { recordDataBase64 } = req.body;
     if (!recordDataBase64) {
-      return { statusCode: 400, body: 'Missing audio data', headers: CORS_HEADERS };
+      res.status(400).send('Missing audio data');
+      return;
     }
 
     const audioBuffer = Buffer.from(recordDataBase64, 'base64');
@@ -48,18 +51,10 @@ exports.handler = async function (event) {
       .map(result => result.alternatives[0].transcript)
       .join('\n');
 
-    return {
-      statusCode: 200,
-      headers: CORS_HEADERS,
-      body: JSON.stringify({ transcription: transcription }),
-    };
+    res.status(200).json({ transcription: transcription });
 
   } catch (error) {
     console.error("Detailed transcription error:", error);
-    return {
-      statusCode: 500,
-      headers: CORS_HEADERS,
-      body: JSON.stringify({ error: `Transcription failed: ${error.message}` }),
-    };
+    res.status(500).json({ error: `Transcription failed: ${error.message}` });
   }
 };
