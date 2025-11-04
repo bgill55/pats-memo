@@ -264,8 +264,13 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button.theme-switcher, .header-controls button {
+button.theme-switcher {
   background: none;
+  color: var(--text-secondary);
+  padding: 0.25rem;
+}
+
+.header-controls button {
   color: var(--text-secondary);
   padding: 0.25rem;
 }
