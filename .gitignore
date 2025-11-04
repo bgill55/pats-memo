@@ -28,3 +28,5 @@ dist-ssr
 
 # Bug reports
 bugreport-*.zip
+
+netlify_deploy_files/
