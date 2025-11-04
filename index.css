@@ -266,8 +266,15 @@ button:disabled {
 
 button.theme-switcher {
   background: none;
-  color: var(--text-secondary);
   padding: 0.25rem;
+}
+
+body[data-theme='light'] .theme-switcher {
+  color: var(--primary);
+}
+
+body[data-theme='dark'] .theme-switcher {
+  color: white;
 }
 
 .header-controls button {
