@@ -5,5 +5,10 @@
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
     }
-  ]
+  ],
+  "functions": {
+    "api/transcribe.cjs": {
+      "runtime": "@vercel/node@latest"
+    }
+  }
 }
