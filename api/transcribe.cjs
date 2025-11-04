@@ -34,7 +34,7 @@ exports.handler = async function (event) {
     
     const config = {
       languageCode: 'en-US',
-      model: 'latest_short',
+      model: 'default',
     };
     
     const request = {

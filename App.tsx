@@ -91,7 +91,7 @@ export default function App() {
   const transcribeAudio = async (base64Data: string) => {
     setCurrentTranscription("Transcribing...");
     try {
-      const url = "https://pats-memo-pad.netlify.app/.netlify/functions/transcribe";
+      const url = "/api/transcribe";
       const response = await fetch(url, {
         method: 'POST',
         headers: {
