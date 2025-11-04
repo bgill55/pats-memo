@@ -66,9 +66,8 @@ body[data-theme='dark'] {
 }
 
 header {
-  position: relative; /* For centering the title */
-  display: flex;
-  justify-content: space-between; /* Push controls to the sides */
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* Three columns: left, center, right */
   align-items: center;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border);
@@ -115,10 +114,10 @@ header {
 .slider:before {
   position: absolute;
   content: "";
-  height: 20px;
-  width: 20px;
-  left: 4px;
-  bottom: 4px;
+  height: 18px; /* Reduced size */
+  width: 18px; /* Reduced size */
+  left: 3px;
+  bottom: 3px;
   background-color: white;
   transition: .4s;
   border-radius: 50%;
@@ -133,9 +132,8 @@ input:checked + .slider:before {
 }
 
 header h1 {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  grid-column: 2; /* Center column */
+  text-align: center;
   margin: 0;
   font-size: 1.5rem; /* Increased size */
   font-weight: 700; /* Increased weight */
@@ -344,10 +342,10 @@ body[data-theme='dark'] .theme-switcher {
   background-color: var(--primary);
   color: white;
   border-radius: 6px;
-  padding: 0.5rem 0.8rem; /* Reduced padding */
+  padding: 0.4rem 0.6rem; /* Further reduced padding */
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem; /* Reduced gap */
+  gap: 0.2rem; /* Further reduced gap */
 }
 
 .voice-command-button span {
