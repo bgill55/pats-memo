@@ -12,5 +12,5 @@
   ],
   "rewrites": [
     { "source": "/api/transcribe", "destination": "/api/transcribe" }
-  ]
 }
+ 
