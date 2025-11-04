@@ -286,6 +286,10 @@ button.theme-switcher {
   align-items: center;
 }
 
+.voice-command-button svg {
+  fill: white;
+}
+
 button.theme-switcher:hover, .header-controls button:hover {
   color: var(--text-primary);
 }
