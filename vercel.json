@@ -10,7 +10,4 @@
       "config": { "distDir": "dist" }
     }
   ],
-  "rewrites": [
-    { "source": "/api/transcribe", "destination": "/api/transcribe" }
-  ]
 }
