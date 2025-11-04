@@ -1,5 +1,9 @@
 {
-  "functions": {
-    "api/transcribe.cjs": {}
-  }
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ]
 }
