@@ -76,9 +76,16 @@ export default function App() {
   const [commandFeedback, setCommandFeedback] = useState('');
   const [theme, setTheme] = useState('light');
 
-  // Refs for the MediaRecorder and audio chunks
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const isRecordingRef = useRef(isRecording);
+
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
+
+  // Ref for the speech recognition instance
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -123,10 +130,10 @@ export default function App() {
 
   const handleToggleListener = () => setIsListening(p => !p);
 
+  // Setup speech recognition
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
       if (!SpeechRecognition) {
         console.error('Speech recognition not supported in this browser.');
         return;
@@ -137,37 +144,45 @@ export default function App() {
       recognition.interimResults = false;
       recognition.lang = 'en-US';
 
-      recognition.onresult = (event) => {
+      recognition.onresult = (event:any) => {
         const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
         console.log('Recognized speech:', transcript);
 
         if (transcript.includes('start recording')) {
-          handleToggleRecording();
+          if (!isRecordingRef.current) {
+            handleToggleRecording();
+          }
         } else if (transcript.includes('stop recording')) {
-          handleToggleRecording();
+          if (isRecordingRef.current) {
+            handleToggleRecording();
+          }
         } else if (transcript.includes('share')) {
-          // Assuming the user wants to share the most recent memo
+          // NOTE: This will have a stale closure over `memos`.
+          // A more robust solution would be needed for this if it were a primary feature.
           if (memos.length > 0) {
             handleShareMemo(memos[0].text);
           }
         }
       };
 
-      recognition.onerror = (event) => {
+      recognition.onerror = (event:any) => {
         console.error('Speech recognition error:', event.error);
       };
 
+      recognitionRef.current = recognition;
+    }
+  }, []); // Runs once on component mount.
+
+  // Start/stop listening
+  useEffect(() => {
+    if (recognitionRef.current) {
       if (isListening) {
-        recognition.start();
+        recognitionRef.current.start();
         console.log('Voice command recognition started.');
       } else {
-        recognition.stop();
+        recognitionRef.current.stop();
         console.log('Voice command recognition stopped.');
       }
-
-      return () => {
-        recognition.stop();
-      };
     }
   }, [isListening]);
   const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
