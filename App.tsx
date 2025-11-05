@@ -1,6 +1,7 @@
 // App.tsx
 import '@khmyznikov/pwa-install';
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocalStorage } from './hooks/useLocalStorage';
 
 // Helper function to convert a Blob to a base64 string
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -74,7 +75,7 @@ export default function App() {
     }
   }, [memos]);
   const [commandFeedback, setCommandFeedback] = useState('');
-  const [theme, setTheme] = useState('light');
+  const [theme, setTheme] = useLocalStorage('theme', 'light');
 
   // Refs for the MediaRecorder and audio chunks
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
