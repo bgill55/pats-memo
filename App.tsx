@@ -1,7 +1,6 @@
 // App.tsx
 import '@khmyznikov/pwa-install';
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocalStorage } from './hooks/useLocalStorage';
 
 // Helper function to convert a Blob to a base64 string
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -75,11 +74,15 @@ export default function App() {
     }
   }, [memos]);
   const [commandFeedback, setCommandFeedback] = useState('');
-  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  const [theme, setTheme] = useState('light');
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const micButtonRef = useRef<HTMLButtonElement | null>(null);
+  const isRecordingRef = useRef(isRecording);
+
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+  }, [isRecording]);
 
   // Ref for the speech recognition instance
   const recognitionRef = useRef<any>(null);
@@ -145,8 +148,14 @@ export default function App() {
         const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
         console.log('Recognized speech:', transcript);
 
-        if (transcript.includes('start recording') || transcript.includes('stop recording')) {
-          micButtonRef.current?.click();
+        if (transcript.includes('start recording')) {
+          if (!isRecordingRef.current) {
+            handleToggleRecording();
+          }
+        } else if (transcript.includes('stop recording')) {
+          if (isRecordingRef.current) {
+            handleToggleRecording();
+          }
         } else if (transcript.includes('share')) {
           // NOTE: This will have a stale closure over `memos`.
           // A more robust solution would be needed for this if it were a primary feature.
@@ -175,7 +184,7 @@ export default function App() {
         console.log('Voice command recognition stopped.');
       }
     }
-  }, [isListening, isRecording, memos]);
+  }, [isListening]);
   const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
   const handleClear = () => setCurrentTranscription('');
   const handleShareMemo = async (text: string) => {
@@ -203,7 +212,7 @@ export default function App() {
   const handleDeleteMemo = (id: number) => setMemos(prev => prev.filter(memo => memo.id !== id));
 
   const handleToggleRecording = async () => {
-    if (isRecording) {
+    if (isRecordingRef.current) {
       // Stop recording
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
         mediaRecorderRef.current.stop();
@@ -305,12 +314,6 @@ export default function App() {
 
                 </button>
 
-                <button onClick={() => handleShareMemo(currentTranscription)}>
-
-                  <ShareIcon /><span>Share</span>
-
-                </button>
-
               </div>
 
             )}
@@ -323,7 +326,7 @@ export default function App() {
 
             <p className="recording-instructions">Tap the microphone to start recording</p>
 
-            <button ref={micButtonRef} className="mic-button" onClick={handleToggleRecording} disabled={isListening}>
+            <button className="mic-button" onClick={handleToggleRecording} disabled={isListening}>
 
               {isRecording && <span className="recording-indicator"></span>}
 
