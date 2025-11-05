@@ -1,16 +1,16 @@
-// netlify/functions/transcribe.js
-
+// api/transcribe.js
+import { SpeechClient } from '@google-cloud/speech';
 
 const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
 const credentials = JSON.parse(credentialsJson);
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*', 
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
     return;
@@ -29,8 +29,7 @@ module.exports = async (req, res) => {
 
     const audioBuffer = Buffer.from(recordDataBase64, 'base64');
     
-    const speech = await import('@google-cloud/speech');
-    const client = new speech.default.SpeechClient({ credentials });
+    const client = new SpeechClient({ credentials });
     const audio = {
       content: audioBuffer.toString('base64'),
     };
