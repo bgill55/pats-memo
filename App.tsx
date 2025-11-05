@@ -122,8 +122,6 @@ export default function App() {
     }
   };
 
-  const recognitionRef = useRef<any>(null);
-
   const handleToggleListener = () => setIsListening(p => !p);
 
   useEffect(() => {
@@ -135,15 +133,12 @@ export default function App() {
         return;
       }
 
-      if (!recognitionRef.current) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = false;
-        recognition.lang = 'en-US';
-        recognitionRef.current = recognition;
-      }
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
 
-      recognitionRef.current.onresult = (event: any) => {
+      recognition.onresult = (event) => {
         const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
         console.log('Recognized speech:', transcript);
 
@@ -152,29 +147,30 @@ export default function App() {
         } else if (transcript.includes('stop recording')) {
           handleToggleRecording();
         } else if (transcript.includes('share')) {
+          // Assuming the user wants to share the most recent memo
           if (memos.length > 0) {
             handleShareMemo(memos[0].text);
           }
         }
       };
 
-      recognitionRef.current.onerror = (event: any) => {
+      recognition.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
       };
 
       if (isListening) {
-        recognitionRef.current.start();
+        recognition.start();
         console.log('Voice command recognition started.');
       } else {
-        recognitionRef.current.stop();
+        recognition.stop();
         console.log('Voice command recognition stopped.');
       }
 
       return () => {
-        recognitionRef.current.stop();
+        recognition.stop();
       };
     }
-  }, [isListening, memos]);
+  }, [isListening, isRecording, memos]);
   const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
   const handleClear = () => setCurrentTranscription('');
   const handleShareMemo = async (text: string) => {
