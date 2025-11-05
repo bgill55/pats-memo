@@ -1,9 +1,6 @@
 // api/transcribe.js
 import { SpeechClient } from '@google-cloud/speech';
 
-const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
-const credentials = JSON.parse(credentialsJson);
-
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
@@ -11,6 +8,11 @@ const CORS_HEADERS = {
 };
 
 export default async function handler(req, res) {
+  // Set CORS headers for all responses
+  res.setHeader('Access-Control-Allow-Origin', CORS_HEADERS['Access-Control-Allow-Origin']);
+  res.setHeader('Access-Control-Allow-Headers', CORS_HEADERS['Access-Control-Allow-Headers']);
+  res.setHeader('Access-Control-Allow-Methods', CORS_HEADERS['Access-Control-Allow-Methods']);
+
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
     return;
@@ -21,6 +23,11 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Initialize credentials and client inside the handler
+    const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
+    const credentials = JSON.parse(credentialsJson);
+    const client = new SpeechClient({ credentials });
+
     const { recordDataBase64 } = req.body;
     if (!recordDataBase64) {
       res.status(400).send('Missing audio data');
@@ -29,7 +36,6 @@ export default async function handler(req, res) {
 
     const audioBuffer = Buffer.from(recordDataBase64, 'base64');
     
-    const client = new SpeechClient({ credentials });
     const audio = {
       content: audioBuffer.toString('base64'),
     };
