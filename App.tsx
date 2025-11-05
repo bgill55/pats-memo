@@ -132,10 +132,14 @@ export default function App() {
 
   const handleToggleListener = () => setIsListening(p => !p);
 
-  const handleToggleRecording = useCallback(async () => {
+  const handleToggleRecording = useCallback(async (isVoiceCommand = false) => {
     if (isRecordingRef.current) {
       // Stop recording
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        if (isVoiceCommand) {
+          // If this is a voice command, discard the last audio chunk
+          audioChunksRef.current.pop();
+        }
         mediaRecorderRef.current.stop();
         setIsRecording(false);
         // The 'stop' event handler will process the audio
@@ -167,7 +171,7 @@ export default function App() {
           stream.getTracks().forEach(track => track.stop());
         };
 
-        mediaRecorder.start();
+        mediaRecorder.start(500); // Record in 500ms chunks
         setIsRecording(true);
         setCurrentTranscription("Listening...");
         setError('');
@@ -203,22 +207,12 @@ export default function App() {
           }
         } else if (transcript.includes('stop recording')) {
           if (isRecordingRef.current) {
-            // Stop the recognition service immediately to prevent it from capturing its own command
-            recognition.stop();
-            handleToggleRecording();
+            handleToggleRecording(true);
           }
         } else if (transcript.includes('share')) {
           if (memosRef.current.length > 0) {
             handleShareMemo(memosRef.current[0].text);
           }
-        }
-      };
-
-      recognition.onend = () => {
-        // If the recognition service stops and we are still in listening mode, restart it.
-        // This is to handle the case where we manually stop it to prevent capturing "stop recording".
-        if (isListening) {
-          recognition.start();
         }
       };
 
@@ -228,7 +222,7 @@ export default function App() {
 
       recognitionRef.current = recognition;
     }
-  }, [handleToggleRecording, isListening]);
+  }, [handleToggleRecording]); // Re-run if handleToggleRecording changes
 
   // Start/stop listening
   useEffect(() => {
@@ -342,7 +336,7 @@ export default function App() {
 
             <p className="recording-instructions">Tap the microphone to start recording</p>
 
-            <button className="mic-button" onClick={handleToggleRecording} disabled={isListening}>
+            <button className="mic-button" onClick={() => handleToggleRecording(false)} disabled={isListening}>
 
               {isRecording && <span className="recording-indicator"></span>}
 
