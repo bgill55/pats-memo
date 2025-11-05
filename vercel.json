@@ -1,16 +1,9 @@
 {
   "builds": [
     {
-      "src": "api/transcribe.cjs",
-      "use": "@vercel/node"
-    },
-    {
       "src": "package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "dist" }
     }
-  ],
-  "rewrites": [
-    { "source": "/api/transcribe", "destination": "/api/transcribe" }
   ]
 }
