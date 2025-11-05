@@ -130,88 +130,7 @@ export default function App() {
 
   const handleToggleListener = () => setIsListening(p => !p);
 
-  // Setup speech recognition
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        console.error('Speech recognition not supported in this browser.');
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-
-      recognition.onresult = (event:any) => {
-        const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-        console.log('Recognized speech:', transcript);
-
-        if (transcript.includes('start recording')) {
-          if (!isRecordingRef.current) {
-            handleToggleRecording();
-          }
-        } else if (transcript.includes('stop recording')) {
-          if (isRecordingRef.current) {
-            handleToggleRecording();
-          }
-        } else if (transcript.includes('share')) {
-          // NOTE: This will have a stale closure over `memos`.
-          // A more robust solution would be needed for this if it were a primary feature.
-          if (memos.length > 0) {
-            handleShareMemo(memos[0].text);
-          }
-        }
-      };
-
-      recognition.onerror = (event:any) => {
-        console.error('Speech recognition error:', event.error);
-      };
-
-      recognitionRef.current = recognition;
-    }
-  }, []); // Runs once on component mount.
-
-  // Start/stop listening
-  useEffect(() => {
-    if (recognitionRef.current) {
-      if (isListening) {
-        recognitionRef.current.start();
-        console.log('Voice command recognition started.');
-      } else {
-        recognitionRef.current.stop();
-        console.log('Voice command recognition stopped.');
-      }
-    }
-  }, [isListening]);
-  const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
-  const handleClear = () => setCurrentTranscription('');
-  const handleShareMemo = async (text: string) => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Memo',
-          text: text,
-        });
-        console.log('Memo shared successfully');
-      } catch (error) {
-        console.error('Error sharing memo:', error);
-      }
-    } else {
-      // Fallback for browsers that don't support the Web Share API
-      try {
-        await navigator.clipboard.writeText(text);
-        alert('Memo copied to clipboard');
-      } catch (error) {
-        console.error('Error copying memo to clipboard:', error);
-        alert('Could not copy memo to clipboard');
-      }
-    }
-  };
-  const handleDeleteMemo = (id: number) => setMemos(prev => prev.filter(memo => memo.id !== id));
-
-  const handleToggleRecording = async () => {
+  const handleToggleRecording = useCallback(async () => {
     if (isRecordingRef.current) {
       // Stop recording
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
@@ -256,7 +175,88 @@ export default function App() {
         alert("Microphone permission was denied or an error occurred.");
       }
     }
+  }, []);
+
+  // Setup speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.error('Speech recognition not supported in this browser.');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event:any) => {
+        const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+        console.log('Recognized speech:', transcript);
+
+        if (transcript.includes('start recording')) {
+          if (!isRecordingRef.current) {
+            handleToggleRecording();
+          }
+        } else if (transcript.includes('stop recording')) {
+          if (isRecordingRef.current) {
+            handleToggleRecording();
+          }
+        } else if (transcript.includes('share')) {
+          // NOTE: This will have a stale closure over `memos`.
+          // A more robust solution would be needed for this if it were a primary feature.
+          if (memos.length > 0) {
+            handleShareMemo(memos[0].text);
+          }
+        }
+      };
+
+      recognition.onerror = (event:any) => {
+        console.error('Speech recognition error:', event.error);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [handleToggleRecording]); // Re-run if handleToggleRecording changes
+
+  // Start/stop listening
+  useEffect(() => {
+    if (recognitionRef.current) {
+      if (isListening) {
+        recognitionRef.current.start();
+        console.log('Voice command recognition started.');
+      } else {
+        recognitionRef.current.stop();
+        console.log('Voice command recognition stopped.');
+      }
+    }
+  }, [isListening]);
+  const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
+  const handleClear = () => setCurrentTranscription('');
+  const handleShareMemo = async (text: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Memo',
+          text: text,
+        });
+        console.log('Memo shared successfully');
+      } catch (error) {
+        console.error('Error sharing memo:', error);
+      }
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Memo copied to clipboard');
+      } catch (error) {
+        console.error('Error copying memo to clipboard:', error);
+        alert('Could not copy memo to clipboard');
+      }
+    }
   };
+  const handleDeleteMemo = (id: number) => setMemos(prev => prev.filter(memo => memo.id !== id));
 
       
     

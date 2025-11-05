@@ -1,4 +1,4 @@
-// netlify/functions/transcribe.js
+// api/transcribe.js
 
 
 const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base64').toString('utf-8');
@@ -10,7 +10,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-module.exports = async (req, res) => {
+export default async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.status(204).send('');
     return;
