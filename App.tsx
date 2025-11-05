@@ -79,10 +79,12 @@ export default function App() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const isRecordingRef = useRef(isRecording);
+  const memosRef = useRef(memos);
 
   useEffect(() => {
     isRecordingRef.current = isRecording;
-  }, [isRecording]);
+    memosRef.current = memos;
+  }, [isRecording, memos]);
 
   // Ref for the speech recognition instance
   const recognitionRef = useRef<any>(null);
@@ -188,7 +190,7 @@ export default function App() {
 
       const recognition = new SpeechRecognition();
       recognition.continuous = true;
-      recognition.interimResults = false;
+      recognition.interimResults = true;
       recognition.lang = 'en-US';
 
       recognition.onresult = (event:any) => {
@@ -201,14 +203,22 @@ export default function App() {
           }
         } else if (transcript.includes('stop recording')) {
           if (isRecordingRef.current) {
+            // Stop the recognition service immediately to prevent it from capturing its own command
+            recognition.stop();
             handleToggleRecording();
           }
         } else if (transcript.includes('share')) {
-          // NOTE: This will have a stale closure over `memos`.
-          // A more robust solution would be needed for this if it were a primary feature.
-          if (memos.length > 0) {
-            handleShareMemo(memos[0].text);
+          if (memosRef.current.length > 0) {
+            handleShareMemo(memosRef.current[0].text);
           }
+        }
+      };
+
+      recognition.onend = () => {
+        // If the recognition service stops and we are still in listening mode, restart it.
+        // This is to handle the case where we manually stop it to prevent capturing "stop recording".
+        if (isListening) {
+          recognition.start();
         }
       };
 
@@ -218,7 +228,7 @@ export default function App() {
 
       recognitionRef.current = recognition;
     }
-  }, [handleToggleRecording]); // Re-run if handleToggleRecording changes
+  }, [handleToggleRecording, isListening]);
 
   // Start/stop listening
   useEffect(() => {
@@ -311,6 +321,12 @@ export default function App() {
                 <button onClick={handleClear}>
 
                   <ClearIcon /><span>Clear</span>
+
+                </button>
+
+                <button onClick={() => handleShareMemo(currentTranscription)}>
+
+                  <ShareIcon /><span>Share</span>
 
                 </button>
 
