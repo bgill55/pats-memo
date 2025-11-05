@@ -300,6 +300,12 @@ export default function App() {
 
                 </button>
 
+                <button onClick={() => handleShareMemo(currentTranscription)}>
+
+                  <ShareIcon /><span>Share</span>
+
+                </button>
+
               </div>
 
             )}
