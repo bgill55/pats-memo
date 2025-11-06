@@ -294,11 +294,12 @@ export default function App() {
 
           <div className="transcription-section">
 
-            <p className="transcription-text">
-
-              {currentTranscription || <span className="placeholder">{isListening ? 'Listening for "start recording"...' : 'Your transcribed text will appear here...'}</span>}
-
-            </p>
+            <textarea
+              className="transcription-text"
+              value={currentTranscription}
+              onChange={(e) => setCurrentTranscription(e.target.value)}
+              placeholder={isListening ? 'Listening for "start recording"...' : 'Your transcribed text will appear here...'}
+            />
 
             {error && <p className="error-message">{error}</p>}
 
