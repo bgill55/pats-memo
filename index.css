@@ -63,6 +63,7 @@ body[data-theme='dark'] {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  border: 2px solid red;
 }
 
 header {
@@ -182,10 +183,20 @@ main {
   border: 1px solid var(--border);
   border-radius: 8px;
   background-color: var(--bg);
+  resize: vertical;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
 }
 
-.transcription-text .placeholder {
+.transcription-text::placeholder {
   color: var(--text-secondary);
+}
+
+.edit-instruction {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 0.5rem;
 }
 
 .error-message {
@@ -280,9 +291,14 @@ main {
 }
 
 .memo-actions button {
-  padding: 0.25rem;
+  padding: 0.5rem;
   background: none;
   color: var(--text-secondary);
+}
+
+.memo-actions button svg {
+  width: 18px;
+  height: 18px;
 }
 
 .memo-actions button:hover {
