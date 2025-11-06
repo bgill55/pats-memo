@@ -182,9 +182,12 @@ main {
   border: 1px solid var(--border);
   border-radius: 8px;
   background-color: var(--bg);
+  resize: vertical;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
 }
 
-.transcription-text .placeholder {
+.transcription-text::placeholder {
   color: var(--text-secondary);
 }
 
