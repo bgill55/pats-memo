@@ -301,12 +301,6 @@ export default function App() {
               placeholder={isListening ? 'Listening for "start recording"...' : 'Your transcribed text will appear here...'}
             />
 
-            {currentTranscription && !isRecording && (
-              <p className="edit-instruction">
-                You can click the text above to edit.
-              </p>
-            )}
-
             {error && <p className="error-message">{error}</p>}
 
             {!isRecording && currentTranscription && (

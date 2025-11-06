@@ -195,6 +195,7 @@ main {
   font-size: 0.8rem;
   color: var(--text-secondary);
   text-align: center;
+  margin-top: -0.5rem; /* Pull it closer to the text area */
   margin-bottom: 0.5rem;
 }
 
