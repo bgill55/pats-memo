@@ -283,9 +283,14 @@ main {
 }
 
 .memo-actions button {
-  padding: 0.25rem;
+  padding: 0.5rem;
   background: none;
   color: var(--text-secondary);
+}
+
+.memo-actions button svg {
+  width: 18px;
+  height: 18px;
 }
 
 .memo-actions button:hover {
