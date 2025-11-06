@@ -1,6 +1,6 @@
 // App.tsx
 import '@khmyznikov/pwa-install';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 // Helper function to convert a Blob to a base64 string
 const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -76,9 +76,18 @@ export default function App() {
   const [commandFeedback, setCommandFeedback] = useState('');
   const [theme, setTheme] = useState('light');
 
-  // Refs for the MediaRecorder and audio chunks
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const isRecordingRef = useRef(isRecording);
+  const memosRef = useRef(memos);
+
+  useEffect(() => {
+    isRecordingRef.current = isRecording;
+    memosRef.current = memos;
+  }, [isRecording, memos]);
+
+  // Ref for the speech recognition instance
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -123,83 +132,14 @@ export default function App() {
 
   const handleToggleListener = () => setIsListening(p => !p);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-
-      if (!SpeechRecognition) {
-        console.error('Speech recognition not supported in this browser.');
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-
-      recognition.onresult = (event) => {
-        const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-        console.log('Recognized speech:', transcript);
-
-        if (transcript.includes('start recording')) {
-          handleToggleRecording();
-        } else if (transcript.includes('stop recording')) {
-          handleToggleRecording();
-        } else if (transcript.includes('share')) {
-          // Assuming the user wants to share the most recent memo
-          if (memos.length > 0) {
-            handleShareMemo(memos[0].text);
-          }
-        }
-      };
-
-      recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-      };
-
-      if (isListening) {
-        recognition.start();
-        console.log('Voice command recognition started.');
-      } else {
-        recognition.stop();
-        console.log('Voice command recognition stopped.');
-      }
-
-      return () => {
-        recognition.stop();
-      };
-    }
-  }, [isListening]);
-  const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
-  const handleClear = () => setCurrentTranscription('');
-  const handleShareMemo = async (text: string) => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Memo',
-          text: text,
-        });
-        console.log('Memo shared successfully');
-      } catch (error) {
-        console.error('Error sharing memo:', error);
-      }
-    } else {
-      // Fallback for browsers that don't support the Web Share API
-      try {
-        await navigator.clipboard.writeText(text);
-        alert('Memo copied to clipboard');
-      } catch (error) {
-        console.error('Error copying memo to clipboard:', error);
-        alert('Could not copy memo to clipboard');
-      }
-    }
-  };
-  const handleDeleteMemo = (id: number) => setMemos(prev => prev.filter(memo => memo.id !== id));
-
-  const handleToggleRecording = async () => {
-    if (isRecording) {
+  const handleToggleRecording = useCallback(async (isVoiceCommand = false) => {
+    if (isRecordingRef.current) {
       // Stop recording
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+        if (isVoiceCommand) {
+          // If this is a voice command, discard the last audio chunk
+          audioChunksRef.current.pop();
+        }
         mediaRecorderRef.current.stop();
         setIsRecording(false);
         // The 'stop' event handler will process the audio
@@ -231,7 +171,7 @@ export default function App() {
           stream.getTracks().forEach(track => track.stop());
         };
 
-        mediaRecorder.start();
+        mediaRecorder.start(500); // Record in 500ms chunks
         setIsRecording(true);
         setCurrentTranscription("Listening...");
         setError('');
@@ -241,7 +181,86 @@ export default function App() {
         alert("Microphone permission was denied or an error occurred.");
       }
     }
+  }, []);
+
+  // Setup speech recognition
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        console.error('Speech recognition not supported in this browser.');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event:any) => {
+        const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+        console.log('Recognized speech:', transcript);
+
+        if (transcript.includes('start recording')) {
+          if (!isRecordingRef.current) {
+            handleToggleRecording();
+          }
+        } else if (transcript.includes('stop recording')) {
+          if (isRecordingRef.current) {
+            handleToggleRecording(true);
+          }
+        } else if (transcript.includes('share')) {
+          if (memosRef.current.length > 0) {
+            handleShareMemo(memosRef.current[0].text);
+          }
+        }
+      };
+
+      recognition.onerror = (event:any) => {
+        console.error('Speech recognition error:', event.error);
+      };
+
+      recognitionRef.current = recognition;
+    }
+  }, [handleToggleRecording]); // Re-run if handleToggleRecording changes
+
+  // Start/stop listening
+  useEffect(() => {
+    if (recognitionRef.current) {
+      if (isListening) {
+        recognitionRef.current.start();
+        console.log('Voice command recognition started.');
+      } else {
+        recognitionRef.current.stop();
+        console.log('Voice command recognition stopped.');
+      }
+    }
+  }, [isListening]);
+  const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
+  const handleClear = () => setCurrentTranscription('');
+  const handleShareMemo = async (text: string) => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Memo',
+          text: text,
+        });
+        console.log('Memo shared successfully');
+      } catch (error) {
+        console.error('Error sharing memo:', error);
+      }
+    } else {
+      // Fallback for browsers that don't support the Web Share API
+      try {
+        await navigator.clipboard.writeText(text);
+        alert('Memo copied to clipboard');
+      } catch (error) {
+        console.error('Error copying memo to clipboard:', error);
+        alert('Could not copy memo to clipboard');
+      }
+    }
   };
+  const handleDeleteMemo = (id: number) => setMemos(prev => prev.filter(memo => memo.id !== id));
 
       
     
@@ -275,11 +294,18 @@ export default function App() {
 
           <div className="transcription-section">
 
-            <p className="transcription-text">
+            <textarea
+              className="transcription-text"
+              value={currentTranscription}
+              onChange={(e) => setCurrentTranscription(e.target.value)}
+              placeholder={isListening ? 'Listening for "start recording"...' : 'Your transcribed text will appear here...'}
+            />
 
-              {currentTranscription || <span className="placeholder">{isListening ? 'Listening for "start recording"...' : 'Your transcribed text will appear here...'}</span>}
-
-            </p>
+            {currentTranscription && !isRecording && (
+              <p className="edit-instruction">
+                You can click the text above to edit.
+              </p>
+            )}
 
             {error && <p className="error-message">{error}</p>}
 
@@ -299,6 +325,12 @@ export default function App() {
 
                 </button>
 
+                <button onClick={() => handleShareMemo(currentTranscription)}>
+
+                  <ShareIcon /><span>Share</span>
+
+                </button>
+
               </div>
 
             )}
@@ -311,7 +343,7 @@ export default function App() {
 
             <p className="recording-instructions">Tap the microphone to start recording</p>
 
-            <button className="mic-button" onClick={handleToggleRecording} disabled={isListening}>
+            <button className="mic-button" onClick={() => handleToggleRecording(false)} disabled={isListening}>
 
               {isRecording && <span className="recording-indicator"></span>}
 
