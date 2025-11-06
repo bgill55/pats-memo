@@ -191,6 +191,14 @@ main {
   color: var(--text-secondary);
 }
 
+.edit-instruction {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: -0.5rem; /* Pull it closer to the text area */
+  margin-bottom: 0.5rem;
+}
+
 .error-message {
   color: #EF4444;
   margin: 0;
