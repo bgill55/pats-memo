@@ -5,7 +5,7 @@ const credentialsJson = Buffer.from(process.env.GOOGLE_CREDENTIALS_BASE64, 'base
 const credentials = JSON.parse(credentialsJson);
 
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*', 
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
