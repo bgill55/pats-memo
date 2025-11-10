@@ -91,6 +91,12 @@ export default function App() {
 
   const transcribeAudio = async (base64Data: string) => {
     setCurrentTranscription("Transcribing...");
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+      controller.abort();
+      setCurrentTranscription(`Transcription timed out after 5 minutes.`);
+    }, 300000); // 5 minutes timeout
+
     try {
       const url = "/api/transcribe";
       const response = await fetch(url, {
@@ -101,7 +107,10 @@ export default function App() {
         body: JSON.stringify({
           recordDataBase64: base64Data,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorBody = await response.text();
@@ -116,16 +125,27 @@ export default function App() {
       setCurrentTranscription(result.transcription);
 
     } catch (e: any) {
-      console.error("Transcription error:", e);
-      setError("Failed to transcribe audio.");
-      setCurrentTranscription(`Transcription failed: ${e.message}`);
+      if (e.name === 'AbortError') {
+        console.error("Transcription request timed out.");
+      } else {
+        console.error("Transcription error:", e);
+        setError("Failed to transcribe audio.");
+        setCurrentTranscription(`Transcription failed: ${e.message}`);
+      }
     }
   };
+
+  const [isSpeechRecognitionSupported, setIsSpeechRecognitionSupported] = useState(false);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    setIsSpeechRecognitionSupported(!!SpeechRecognition);
+  }, []);
 
   const handleToggleListener = () => setIsListening(p => !p);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isSpeechRecognitionSupported) {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
       if (!SpeechRecognition) {
@@ -170,7 +190,7 @@ export default function App() {
         recognition.stop();
       };
     }
-  }, [isListening]);
+  }, [isListening, isSpeechRecognitionSupported]);
   const handleSaveMemo = () => { if (currentTranscription) { setMemos(prev => [{id: Date.now(), text: currentTranscription, createdAt: new Date().toISOString()}, ...prev]); setCurrentTranscription(''); } };
   const handleClear = () => setCurrentTranscription('');
   const handleShareMemo = async (text: string) => {
@@ -209,7 +229,15 @@ export default function App() {
       // Start recording
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
+        
+        const options = { mimeType: '' };
+        if (MediaRecorder.isTypeSupported('audio/mp4')) {
+          options.mimeType = 'audio/mp4';
+        } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+          options.mimeType = 'audio/webm';
+        }
+        
+        const mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
 
@@ -220,7 +248,7 @@ export default function App() {
         };
 
         mediaRecorder.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          const audioBlob = new Blob(audioChunksRef.current, { type: options.mimeType });
           try {
             const base64String = await blobToBase64(audioBlob);
             transcribeAudio(base64String);
@@ -261,12 +289,12 @@ export default function App() {
               <div className="header-controls">
                 <pwa-install></pwa-install>
     
-                <button onClick={handleToggleListener} title="Toggle Voice Commands" className="voice-command-button">
-
-              <VoiceCommandIcon />
-              <span>Hands-Free</span>
-
-            </button>
+                {isSpeechRecognitionSupported && (
+                  <button onClick={handleToggleListener} title="Toggle Voice Commands" className="voice-command-button">
+                    <VoiceCommandIcon />
+                    <span>Hands-Free</span>
+                  </button>
+                )}
 
           </div>
 

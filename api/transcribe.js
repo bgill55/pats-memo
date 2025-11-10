@@ -37,6 +37,7 @@ export default async function handler(req, res) {
     const config = {
       languageCode: 'en-US',
       model: 'default',
+      enableAutomaticPunctuation: true,
     };
     
     const request = {
@@ -44,7 +45,8 @@ export default async function handler(req, res) {
       config: config,
     };
 
-    const [response] = await client.recognize(request);
+    const [operation] = await client.longRunningRecognize(request);
+    const [response] = await operation.promise();
     
     const transcription = response.results
       .map(result => result.alternatives[0].transcript)
