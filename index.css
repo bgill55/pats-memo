@@ -111,6 +111,15 @@ header {
   box-sizing: border-box;
 }
 
+.sun-icon, .moon-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  shape-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .slider:before {
   position: absolute;
   content: "";
