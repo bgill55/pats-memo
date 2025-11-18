@@ -80,11 +80,13 @@ export default function App() {
   const audioChunksRef = useRef<Blob[]>([]);
   const isRecordingRef = useRef(isRecording);
   const memosRef = useRef(memos);
+  const currentTranscriptionRef = useRef(currentTranscription);
 
   useEffect(() => {
     isRecordingRef.current = isRecording;
     memosRef.current = memos;
-  }, [isRecording, memos]);
+    currentTranscriptionRef.current = currentTranscription;
+  }, [isRecording, memos, currentTranscription]);
 
   // Ref for the speech recognition instance
   const recognitionRef = useRef<any>(null);
@@ -152,6 +154,36 @@ export default function App() {
 
   const handleToggleListener = () => setIsListening(p => !p);
 
+  // Play audio feedback for voice commands
+  const playCommandSound = useCallback(() => {
+    try {
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 800;
+      oscillator.type = 'sine';
+
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (e) {
+      console.error("Error playing command sound:", e);
+    }
+  }, []);
+
+  // Show command feedback and auto-dismiss
+  const showCommandFeedback = useCallback((message: string) => {
+    setCommandFeedback(message);
+    playCommandSound();
+    setTimeout(() => setCommandFeedback(''), 2000);
+  }, [playCommandSound]);
+
   const handleToggleRecording = useCallback(async (isVoiceCommand = false) => {
     if (isRecordingRef.current) {
       // Stop recording
@@ -168,14 +200,14 @@ export default function App() {
       // Start recording
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+
         const options = { mimeType: '' };
         if (MediaRecorder.isTypeSupported('audio/mp4')) {
           options.mimeType = 'audio/mp4';
         } else if (MediaRecorder.isTypeSupported('audio/webm')) {
           options.mimeType = 'audio/webm';
         }
-        
+
         const mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorderRef.current = mediaRecorder;
         audioChunksRef.current = [];
@@ -226,31 +258,101 @@ export default function App() {
       recognition.lang = 'en-US';
 
       recognition.onresult = (event:any) => {
-        const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-        console.log('Recognized speech:', transcript);
+        const result = event.results[event.results.length - 1];
+        const transcript = result[0].transcript.trim().toLowerCase();
+        const confidence = result[0].confidence;
 
-        if (transcript.includes('start recording')) {
+        console.log('Recognized speech:', transcript, 'Confidence:', confidence);
+
+        // Only process commands with reasonable confidence (if available)
+        if (confidence !== undefined && confidence < 0.5) {
+          console.log('Low confidence, ignoring command');
+          return;
+        }
+
+        // Improved command matching with priority order
+        // Use more specific patterns to reduce false positives
+
+        // Recording commands
+        if (transcript === 'start recording' || transcript === 'begin recording' || transcript === 'start') {
           if (!isRecordingRef.current) {
+            showCommandFeedback('🎙️ Starting recording...');
             handleToggleRecording();
           }
-        } else if (transcript.includes('stop recording')) {
+        } else if (transcript === 'stop recording' || transcript === 'end recording' || transcript === 'stop') {
           if (isRecordingRef.current) {
+            showCommandFeedback('⏹️ Stopping recording...');
             handleToggleRecording(true);
           }
-        } else if (transcript.includes('share')) {
+        }
+        // Save command
+        else if (transcript === 'save' || transcript === 'save memo' || transcript === 'save that') {
+          if (currentTranscriptionRef.current && !isRecordingRef.current) {
+            showCommandFeedback('💾 Saving memo...');
+            handleSaveMemo();
+          }
+        }
+        // Clear command
+        else if (transcript === 'clear' || transcript === 'clear text' || transcript === 'clear that') {
+          if (currentTranscriptionRef.current && !isRecordingRef.current) {
+            showCommandFeedback('🗑️ Clearing text...');
+            handleClear();
+          }
+        }
+        // Delete last memo command
+        else if (transcript === 'delete' || transcript === 'delete memo' || transcript === 'delete last memo' || transcript === 'delete that') {
           if (memosRef.current.length > 0) {
+            const lastMemoId = memosRef.current[0].id;
+            showCommandFeedback('🗑️ Deleting last memo...');
+            handleDeleteMemo(lastMemoId);
+          }
+        }
+        // Share command
+        else if (transcript === 'share' || transcript === 'share memo' || transcript === 'share that') {
+          if (memosRef.current.length > 0) {
+            showCommandFeedback('📤 Sharing memo...');
             handleShareMemo(memosRef.current[0].text);
+          } else if (currentTranscriptionRef.current && !isRecordingRef.current) {
+            showCommandFeedback('📤 Sharing text...');
+            handleShareMemo(currentTranscriptionRef.current);
           }
         }
       };
 
       recognition.onerror = (event:any) => {
         console.error('Speech recognition error:', event.error);
+
+        // Provide user-friendly error messages
+        if (event.error === 'no-speech') {
+          console.log('No speech detected, continuing to listen...');
+        } else if (event.error === 'audio-capture') {
+          setError('Microphone not accessible. Please check permissions.');
+          setIsListening(false);
+        } else if (event.error === 'not-allowed') {
+          setError('Microphone permission denied. Please enable it in your browser settings.');
+          setIsListening(false);
+        } else if (event.error === 'network') {
+          setError('Network error during voice recognition. Please check your connection.');
+        } else {
+          console.log('Voice recognition error:', event.error);
+        }
+      };
+
+      recognition.onend = () => {
+        // Auto-restart if still supposed to be listening
+        if (isListening) {
+          console.log('Speech recognition ended, restarting...');
+          try {
+            recognition.start();
+          } catch (e) {
+            console.error('Failed to restart recognition:', e);
+          }
+        }
       };
 
       recognitionRef.current = recognition;
     }
-  }, [isSpeechRecognitionSupported, handleToggleRecording]); // Re-run if handleToggleRecording changes
+  }, [isSpeechRecognitionSupported, handleToggleRecording, showCommandFeedback]); // Re-run if dependencies change
 
   // Start/stop listening
   useEffect(() => {

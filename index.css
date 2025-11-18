@@ -375,3 +375,32 @@ body[data-theme='dark'] .theme-switcher {
 button.theme-switcher:hover, .header-controls button:hover {
   color: var(--text-primary);
 }
+
+/* --- Command Feedback --- */
+.command-feedback {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--surface);
+  color: var(--text-primary);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  z-index: 1000;
+  animation: slideInDown 0.3s ease-out;
+  font-weight: 500;
+  font-size: 1rem;
+  border: 2px solid var(--primary);
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

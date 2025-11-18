@@ -8,7 +8,7 @@ Pat's Memo Pad is a modern, voice-powered note-taking application designed for s
 *   **AI-Powered Transcription:** Transcribe your voice memos into text using Google Cloud's Speech-to-Text API.
 *   **Editable Transcriptions:** Correct and refine your transcriptions before saving them.
 *   **Saved Memos:** Store your transcriptions as memos for later reference.
-*   **Hands-Free Mode:** Use voice commands like "start recording" and "stop recording" for a completely hands-free experience.
+*   **Hands-Free Mode:** Use voice commands for a completely hands-free experience. Includes visual and audio feedback when commands are recognized.
 *   **Share and Delete:** Easily share your memos with others or delete them when they're no longer needed.
 *   **PWA Support:** Install the app on your desktop or mobile device for easy access.
 *   **Light/Dark Theme:** Choose between a light or dark theme for your comfort.
@@ -24,6 +24,28 @@ Pat's Memo Pad is a modern, voice-powered note-taking application designed for s
     *   **Google Cloud Speech-to-Text API:** For converting audio to text.
 *   **Deployment:**
     *   **Vercel:** A platform for deploying modern web applications.
+
+## Voice Commands
+
+Pat's Memo Pad supports the following hands-free voice commands:
+
+### Recording Commands
+*   **"start recording"** / **"begin recording"** / **"start"** - Start recording a new memo
+*   **"stop recording"** / **"end recording"** / **"stop"** - Stop the current recording and transcribe
+
+### Memo Management Commands
+*   **"save"** / **"save memo"** / **"save that"** - Save the current transcription as a memo
+*   **"clear"** / **"clear text"** / **"clear that"** - Clear the current transcription
+*   **"delete"** / **"delete memo"** / **"delete last memo"** / **"delete that"** - Delete the most recent saved memo
+
+### Sharing Commands
+*   **"share"** / **"share memo"** / **"share that"** - Share the current transcription or most recent memo
+
+### How to Use Hands-Free Mode
+1. Click the "Hands-Free" button in the header to activate voice command listening
+2. Speak one of the supported commands clearly
+3. The app will provide visual and audio feedback when a command is recognized
+4. Commands are only processed when the app has reasonable confidence in what you said
 
 ## Getting Started
 
