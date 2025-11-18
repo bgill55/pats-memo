@@ -99,7 +99,7 @@ export default function App() {
     setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
   };
 
-  const transcribeAudio = async (base64Data: string) => {
+  const transcribeAudio = async (base64Data: string, mimeType: string = 'audio/webm') => {
     setCurrentTranscription("Transcribing...");
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
@@ -116,6 +116,7 @@ export default function App() {
         },
         body: JSON.stringify({
           recordDataBase64: base64Data,
+          mimeType: mimeType,
         }),
         signal: controller.signal,
       });
@@ -222,7 +223,7 @@ export default function App() {
           const audioBlob = new Blob(audioChunksRef.current, { type: options.mimeType });
           try {
             const base64String = await blobToBase64(audioBlob);
-            transcribeAudio(base64String);
+            transcribeAudio(base64String, options.mimeType);
           } catch (e) {
             console.error("Error converting blob to base64", e);
             setError("Failed to process audio.");
