@@ -1,0 +1,32 @@
+<svg width="1170" height="2532" viewBox="0 0 1170 2532" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1170" height="2532" fill="#F9F9F9"/>
+
+  <!-- Header -->
+  <rect width="1170" height="120" fill="#FFFFFF"/>
+  <text x="585" y="75" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#3B82F6" text-anchor="middle">Pat's Memo Pad</text>
+
+  <!-- Transcription Area -->
+  <rect x="60" y="180" width="1050" height="600" rx="24" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+  <text x="585" y="500" font-family="Arial, sans-serif" font-size="36" fill="#6B7280" text-anchor="middle">Your transcribed text will appear here...</text>
+
+  <!-- Microphone Button -->
+  <circle cx="585" cy="1050" r="108" fill="#3B82F6"/>
+  <circle cx="585" cy="1050" r="72" fill="#FFFFFF"/>
+  <path d="M 585 990 L 585 1050 M 585 1050 L 585 1110 M 525 1050 L 645 1050" stroke="#3B82F6" stroke-width="12" stroke-linecap="round"/>
+
+  <text x="585" y="960" font-family="Arial, sans-serif" font-size="32" fill="#6B7280" text-anchor="middle">Tap the microphone to start recording</text>
+
+  <!-- Saved Memos Section -->
+  <text x="60" y="1350" font-family="Arial, sans-serif" font-size="42" font-weight="600" fill="#1F2937">Saved Memos</text>
+
+  <!-- Demo Memo Card -->
+  <rect x="60" y="1420" width="1050" height="280" rx="24" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+  <text x="90" y="1490" font-family="Arial, sans-serif" font-size="36" fill="#1F2937">
+    <tspan x="90" dy="0">Sample memo: Remember to check the</tspan>
+    <tspan x="90" dy="48">hands-free features!</tspan>
+  </text>
+  <text x="90" y="1650" font-family="Arial, sans-serif" font-size="28" fill="#6B7280">Nov 18, 2025, 12:00 PM</text>
+
+  <text x="585" y="2400" font-family="Arial, sans-serif" font-size="28" fill="#9CA3AF" text-anchor="middle" font-style="italic">Replace with actual screenshot</text>
+</svg>

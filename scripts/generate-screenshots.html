@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenshot Generator - Pat's Memo Pad</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #3B82F6;
+            margin-bottom: 10px;
+        }
+        .instructions {
+            background: #EFF6FF;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #3B82F6;
+            margin: 20px 0;
+        }
+        .step {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #2563EB;
+        }
+        .warning {
+            background: #FEF3C7;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #F59E0B;
+            margin: 20px 0;
+        }
+        code {
+            background: #f1f1f1;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 PWA Screenshot Generator</h1>
+        <p>Follow these steps to create screenshots for your PWA install prompt:</p>
+
+        <div class="instructions">
+            <h3>Manual Screenshot Method (Recommended)</h3>
+            <div class="step">
+                <strong>Step 1:</strong> Open your app in a new window with mobile dimensions
+                <br>
+                <button onclick="openMobileWindow()">Open Mobile View</button>
+            </div>
+
+            <div class="step">
+                <strong>Step 2:</strong> In the mobile window, capture these 3 screens:
+                <ul>
+                    <li><strong>Screenshot 1:</strong> Main interface (show the textarea and mic button)</li>
+                    <li><strong>Screenshot 2:</strong> Hands-free mode active (click "Hands-Free" button first)</li>
+                    <li><strong>Screenshot 3:</strong> Saved memos (create some demo memos first)</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <strong>Step 3:</strong> Use browser DevTools screenshot feature:
+                <ul>
+                    <li>Press <code>F12</code> to open DevTools</li>
+                    <li>Press <code>Ctrl+Shift+M</code> (Windows) or <code>Cmd+Shift+M</code> (Mac) for device toolbar</li>
+                    <li>Select "iPhone 14 Pro" or set custom: <code>390 x 844</code></li>
+                    <li>Press <code>Ctrl+Shift+P</code> → type "screenshot" → "Capture screenshot"</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <strong>Step 4:</strong> Save screenshots:
+                <ul>
+                    <li>Rename downloaded files to: <code>screenshot-1.png</code>, <code>screenshot-2.png</code>, <code>screenshot-3.png</code></li>
+                    <li>Move them to: <code>public/screenshots/</code></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Note:</strong> Make sure to:
+            <ul>
+                <li>Use light mode for consistency</li>
+                <li>Add some demo memos before taking screenshot 3</li>
+                <li>Screenshot dimensions should be <strong>1170 x 2532</strong> (or 390 x 844)</li>
+            </ul>
+        </div>
+
+        <h3>Alternative: Use Online Screenshot Tools</h3>
+        <p>You can also use these online tools:</p>
+        <button onclick="window.open('https://www.screely.com/', '_blank')">Screely</button>
+        <button onclick="window.open('https://screenshot.rocks/', '_blank')">Screenshot.rocks</button>
+
+        <hr style="margin: 30px 0;">
+
+        <h3>Quick Test</h3>
+        <p>After adding screenshots, you can verify they work by:</p>
+        <ol>
+            <li>Deploying your updated app</li>
+            <li>Opening it in Chrome/Edge on mobile or desktop</li>
+            <li>Checking the install prompt - screenshots should appear</li>
+        </ol>
+
+        <div style="margin-top: 30px; padding: 20px; background: #F3F4F6; border-radius: 8px;">
+            <h4>Current Status</h4>
+            <p>✅ Manifest configured with screenshot entries</p>
+            <p>⏳ Waiting for actual screenshot images in <code>public/screenshots/</code></p>
+            <p style="margin-top: 15px; font-size: 14px; color: #6B7280;">
+                The PWA will still work without screenshots, but they make the install prompt much more attractive!
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function openMobileWindow() {
+            // Open app in a mobile-sized window
+            const width = 390;
+            const height = 844;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+
+            window.open(
+                window.location.origin,
+                'MobileView',
+                `width=${width},height=${height},left=${left},top=${top}`
+            );
+        }
+    </script>
+</body>
+</html>
