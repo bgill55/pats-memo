@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenshot Helper - Pat's Memo Pad</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #3B82F6;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #6B7280;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+        .card {
+            background: #F9FAFB;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 20px 0;
+            border-left: 4px solid #3B82F6;
+        }
+        .step {
+            margin: 20px 0;
+        }
+        .step-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: #3B82F6;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: bold;
+            margin-right: 12px;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px 10px 10px 0;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .warning {
+            background: #FEF3C7;
+            border-left-color: #F59E0B;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #F59E0B;
+            margin: 20px 0;
+        }
+        code {
+            background: #E5E7EB;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #DC2626;
+        }
+        ul {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+        li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+        .dimensions {
+            display: inline-block;
+            background: #DBEAFE;
+            color: #1E40AF;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 0 4px;
+        }
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><span class="emoji">📸</span>Screenshot Helper</h1>
+        <p class="subtitle">Create beautiful screenshots for your PWA install prompt</p>
+
+        <div class="card">
+            <h2 style="margin-bottom: 16px;">Quick Start</h2>
+            <button onclick="openMobileView()">🚀 Open App in Mobile View</button>
+            <p style="margin-top: 12px; color: #6B7280;">This will open your app in a mobile-sized window, perfect for taking screenshots!</p>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 20px;">Step-by-Step Guide</h2>
+
+            <div class="step">
+                <span class="step-number">1</span>
+                <strong>Open DevTools</strong>
+                <ul>
+                    <li>Press <code>F12</code> or right-click → "Inspect"</li>
+                    <li>Toggle device toolbar: <code>Ctrl+Shift+M</code> (Windows) or <code>Cmd+Shift+M</code> (Mac)</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">2</span>
+                <strong>Set Mobile Dimensions</strong>
+                <ul>
+                    <li>Select "iPhone 14 Pro" from the device dropdown</li>
+                    <li>Or set custom: <span class="dimensions">390 × 844</span></li>
+                    <li>Make sure zoom is set to 100%</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">3</span>
+                <strong>Capture 3 Screenshots</strong>
+                <ul>
+                    <li><strong>Screenshot 1:</strong> Main interface (show the textarea and mic button)</li>
+                    <li><strong>Screenshot 2:</strong> Hands-free mode (click "Hands-Free" button first)</li>
+                    <li><strong>Screenshot 3:</strong> Saved memos (create 2-3 demo memos first)</li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">4</span>
+                <strong>Save Screenshots</strong>
+                <ul>
+                    <li>In DevTools, press <code>Ctrl+Shift+P</code> (Cmd+Shift+P on Mac)</li>
+                    <li>Type "screenshot" and select "Capture screenshot"</li>
+                    <li>Repeat for each view</li>
+                    <li>Rename files to: <code>screenshot-1.png</code>, <code>screenshot-2.png</code>, <code>screenshot-3.png</code></li>
+                </ul>
+            </div>
+
+            <div class="step">
+                <span class="step-number">5</span>
+                <strong>Add to Project</strong>
+                <ul>
+                    <li>Move the 3 PNG files to: <code>public/screenshots/</code></li>
+                    <li>Rebuild and deploy your app</li>
+                    <li>Screenshots will appear in the PWA install prompt! 🎉</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="warning">
+            <strong>⚠️ Tips for Best Results:</strong>
+            <ul style="margin-top: 8px;">
+                <li>Use <strong>light mode</strong> for consistency</li>
+                <li>Add demo content - create some sample memos before screenshot 3</li>
+                <li>Target size: <span class="dimensions">1170 × 2532</span> (or 390 × 844)</li>
+                <li>Make sure no personal information is visible</li>
+            </ul>
+        </div>
+
+        <div class="card" style="background: #F0F9FF; border-left-color: #0EA5E9;">
+            <h3 style="color: #0369A1; margin-bottom: 12px;">Alternative Methods</h3>
+            <button onclick="window.open('https://www.screely.com/', '_blank')">Try Screely</button>
+            <button onclick="window.open('https://screenshot.rocks/', '_blank')">Try Screenshot.rocks</button>
+            <p style="margin-top: 12px; color: #6B7280; font-size: 0.95em;">
+                These tools can help you create professional-looking screenshots with device frames!
+            </p>
+        </div>
+
+        <div style="margin-top: 40px; padding: 24px; background: #F3F4F6; border-radius: 12px; text-align: center;">
+            <p style="color: #6B7280; line-height: 1.6;">
+                Need the full guide? Check <code>SCREENSHOTS.md</code> in your project root<br>
+                or <code>public/screenshots/README.md</code> for quick reference.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function openMobileView() {
+            const width = 390;
+            const height = 844;
+            const left = Math.max(0, (screen.width - width) / 2);
+            const top = Math.max(0, (screen.height - height) / 2);
+
+            const appUrl = window.location.origin;
+            const features = `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`;
+
+            const newWindow = window.open(appUrl, 'MobileView', features);
+
+            if (newWindow) {
+                alert('✅ Mobile view opened! Now you can capture screenshots using DevTools (F12 → Ctrl+Shift+P → "Capture screenshot")');
+            } else {
+                alert('❌ Popup blocked! Please allow popups for this site and try again.');
+            }
+        }
+    </script>
+</body>
+</html>
