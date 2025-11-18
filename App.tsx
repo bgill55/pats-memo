@@ -90,6 +90,7 @@ export default function App() {
 
   // Ref for the speech recognition instance
   const recognitionRef = useRef<any>(null);
+  const lastCommandTimeRef = useRef<number>(0);
 
   useEffect(() => {
     document.body.setAttribute('data-theme', theme);
@@ -190,8 +191,13 @@ export default function App() {
       // Stop recording
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
         if (isVoiceCommand) {
-          // If this is a voice command, discard the last audio chunk
+          // If this is a voice command, discard the last 2-3 chunks (1-1.5 seconds)
+          // This ensures we remove the entire "stop recording" phrase
           audioChunksRef.current.pop();
+          audioChunksRef.current.pop();
+          if (audioChunksRef.current.length > 0) {
+            audioChunksRef.current.pop();
+          }
         }
         mediaRecorderRef.current.stop();
         setIsRecording(false);
@@ -271,17 +277,26 @@ export default function App() {
           return;
         }
 
+        // Debounce: prevent same command from being processed within 1 second
+        const now = Date.now();
+        if (now - lastCommandTimeRef.current < 1000) {
+          console.log('Command too soon after last command, ignoring');
+          return;
+        }
+
         // Improved command matching with priority order
         // Use more specific patterns to reduce false positives
 
         // Recording commands
         if (transcript === 'start recording' || transcript === 'begin recording' || transcript === 'start') {
           if (!isRecordingRef.current) {
+            lastCommandTimeRef.current = now;
             showCommandFeedback('🎙️ Starting recording...');
             handleToggleRecording();
           }
         } else if (transcript === 'stop recording' || transcript === 'end recording' || transcript === 'stop') {
           if (isRecordingRef.current) {
+            lastCommandTimeRef.current = now;
             showCommandFeedback('⏹️ Stopping recording...');
             handleToggleRecording(true);
           }
@@ -289,6 +304,7 @@ export default function App() {
         // Save command
         else if (transcript === 'save' || transcript === 'save memo' || transcript === 'save that') {
           if (currentTranscriptionRef.current && !isRecordingRef.current) {
+            lastCommandTimeRef.current = now;
             showCommandFeedback('💾 Saving memo...');
             handleSaveMemo();
           }
@@ -296,6 +312,7 @@ export default function App() {
         // Clear command
         else if (transcript === 'clear' || transcript === 'clear text' || transcript === 'clear that') {
           if (currentTranscriptionRef.current && !isRecordingRef.current) {
+            lastCommandTimeRef.current = now;
             showCommandFeedback('🗑️ Clearing text...');
             handleClear();
           }
@@ -303,6 +320,7 @@ export default function App() {
         // Delete last memo command
         else if (transcript === 'delete' || transcript === 'delete memo' || transcript === 'delete last memo' || transcript === 'delete that') {
           if (memosRef.current.length > 0) {
+            lastCommandTimeRef.current = now;
             const lastMemoId = memosRef.current[0].id;
             showCommandFeedback('🗑️ Deleting last memo...');
             handleDeleteMemo(lastMemoId);
@@ -311,9 +329,11 @@ export default function App() {
         // Share command
         else if (transcript === 'share' || transcript === 'share memo' || transcript === 'share that') {
           if (memosRef.current.length > 0) {
+            lastCommandTimeRef.current = now;
             showCommandFeedback('📤 Sharing memo...');
             handleShareMemo(memosRef.current[0].text);
           } else if (currentTranscriptionRef.current && !isRecordingRef.current) {
+            lastCommandTimeRef.current = now;
             showCommandFeedback('📤 Sharing text...');
             handleShareMemo(currentTranscriptionRef.current);
           }
